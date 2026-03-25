@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 set -euo pipefail
 
-INSTALL_DIR="${INSTALL_DIR:-/usr/local/bin}"
+INSTALL_DIR="${INSTALL_DIR:-$HOME/.local/bin}"
 REPO="exasol-labs/saas-cli"
 
 # ---------------------------------------------------------------------------
@@ -57,7 +57,7 @@ printf "Resolving latest version... "
 if [ -z "${VERSION:-}" ]; then
   VERSION="$(curl -fsSL -H "User-Agent: exasol-saas-installer" \
     "https://api.github.com/repos/${REPO}/releases/latest" \
-    | grep '"tag_name"' | sed 's/.*"tag_name": *"\(.*\)".*/\1/')"
+    | grep '"tag_name"' | sed 's/.*"tag_name": *"\([^"]*\)".*/\1/')"
   if [ -z "$VERSION" ]; then
     echo ""
     echo "Error: could not resolve latest version from GitHub API"
@@ -84,6 +84,7 @@ fi
 # Install
 # ---------------------------------------------------------------------------
 
+mkdir -p "$INSTALL_DIR"
 INSTALL_PATH="${INSTALL_DIR}/exasol-saas"
 echo "Installing to ${INSTALL_PATH}..."
 chmod +x "$TMP_FILE"
