@@ -1,0 +1,29 @@
+version: "3"
+
+vars:
+  BINARY: bin/exasol-saas
+  VERSION: "0.1.0"
+
+tasks:
+  build:
+    desc: Build the CLI binary to bin/
+    cmds:
+      - mkdir -p bin
+      - go build -ldflags "-X 'github.com/exasol-labs/saas-cli/internal/cmd.Version={{.VERSION}}'" -o {{.BINARY}} ./cmd/exasol-saas
+
+  test:
+    desc: Run unit and integration tests
+    cmds:
+      - go test ./...
+
+  lint:
+    desc: Run go vet and gofmt check
+    cmds:
+      - go vet ./...
+      - test -z "$(gofmt -l .)"
+
+  coverage:
+    desc: Generate HTML coverage report
+    cmds:
+      - go test -coverprofile=coverage.out ./...
+      - go tool cover -html=coverage.out
