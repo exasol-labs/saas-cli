@@ -55,10 +55,8 @@ echo "${OS_NAME}/${ARCH_NAME}"
 
 printf "Resolving latest version... "
 if [ -z "${VERSION:-}" ]; then
-  API_URL="https://api.github.com/repos/${REPO}/releases/latest"
-  echo "$API_URL"
   VERSION="$(curl -fsSL -H "User-Agent: exasol-saas-installer" \
-    "$API_URL" \
+    "https://api.github.com/repos/${REPO}/releases/latest" \
     | grep '"tag_name"' | sed 's/.*"tag_name": *"\(.*\)".*/\1/')"
   if [ -z "$VERSION" ]; then
     echo ""
@@ -76,7 +74,7 @@ echo "$VERSION"
 DOWNLOAD_URL="https://github.com/${REPO}/releases/download/${VERSION}/${BINARY}"
 TMP_FILE="$(mktemp)"
 
-echo "Downloading ${DOWNLOAD_URL}..."
+echo "Downloading ${BINARY}..."
 if ! curl -fsSL "$DOWNLOAD_URL" -o "$TMP_FILE"; then
   echo "Error: download failed from ${DOWNLOAD_URL}"
   exit 1
