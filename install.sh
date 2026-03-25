@@ -55,7 +55,8 @@ echo "${OS_NAME}/${ARCH_NAME}"
 
 printf "Resolving latest version... "
 if [ -z "${VERSION:-}" ]; then
-  VERSION="$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest" \
+  VERSION="$(curl -fsSL -H "User-Agent: exasol-saas-installer" \
+    "https://api.github.com/repos/${REPO}/releases/latest" \
     | grep '"tag_name"' | sed 's/.*"tag_name": *"\(.*\)".*/\1/')"
   if [ -z "$VERSION" ]; then
     echo ""
