@@ -6,6 +6,46 @@ A self-contained bash script that demonstrates the full lifecycle of spinning up
 
 `examples/setup-sample-db.sh`
 
+## Usage
+
+```
+setup-sample-db.sh [MODE] [DB_ID]
+```
+
+| Argument | Description |
+|---|---|
+| `MODE` | `create` (default) or `existing` |
+| `DB_ID` | Required when `MODE=existing` — the ID of the already-running database to use |
+
+### Mode: `create` (default)
+
+Runs the full lifecycle: creates a new database, waits for it to start, then connects and verifies.
+
+```bash
+./examples/setup-sample-db.sh
+# or
+./examples/setup-sample-db.sh create
+```
+
+### Mode: `existing`
+
+Skips database creation and the wait-for-running poll. Jumps directly to getting the cluster ID, adding the IP allowlist rule, getting connection details, and verifying connectivity.
+
+```bash
+./examples/setup-sample-db.sh existing <db-id>
+```
+
+If `existing` is given without a `<db-id>`, print an error and exit:
+```
+Error: MODE=existing requires a database ID as the second argument
+Usage: setup-sample-db.sh existing <db-id>
+```
+
+Any other value for MODE is an error:
+```
+Error: unknown mode '<value>'. Use 'create' or 'existing'.
+```
+
 ## Prerequisites
 
 The script must check for both tools at startup. If either is missing, print a clear error with install instructions and exit non-zero.
@@ -60,7 +100,9 @@ The CLI picks up `EXASOL_SAAS_TOKEN` and `EXASOL_SAAS_ACCOUNT_ID` automatically 
 
 ## Script flow
 
-### Step 1 — Create the database
+Steps 1–2 are skipped in `existing` mode. Steps 3–6 run in both modes.
+
+### Step 1 — Create the database (create mode only)
 
 ```
 exasol-saas database create \
@@ -79,7 +121,7 @@ DB_ID=$(... | jq -r '.id')
 
 Print: `Created database: $DB_ID`
 
-### Step 2 — Wait for the database to become running
+### Step 2 — Wait for the database to become running (create mode only)
 
 Poll `database status <id>` in a sleep loop (10 s interval). Print progress on each iteration.
 
@@ -138,7 +180,16 @@ Print on success: `Connection verified. Database is ready.`
 - Any failed CLI call or jq extraction exits the script immediately via `-e`.
 - The polling loop is the only intentional wait; all other commands fail fast.
 
+## Step numbering
+
+Step numbers in the output reflect what actually runs:
+
+- `create` mode: steps `[1/6]` through `[6/6]`
+- `existing` mode: steps `[1/4]` through `[4/4]` (skips the create and wait steps; renumbers from 1)
+
 ## Example output
+
+### create mode
 
 ```
 [1/6] Creating database...
@@ -154,5 +205,17 @@ Cluster ID: cl456
 IP allowlist rule added.
 [5/6] Getting connection details...
 [6/6] Verifying connectivity...
+Connection verified. Database is ready.
+```
+
+### existing mode
+
+```
+[1/4] Getting cluster ID...
+Cluster ID: cl456
+[2/4] Adding IP allowlist rule...
+IP allowlist rule added.
+[3/4] Getting connection details...
+[4/4] Verifying connectivity...
 Connection verified. Database is ready.
 ```

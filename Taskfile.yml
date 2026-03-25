@@ -27,3 +27,23 @@ tasks:
     cmds:
       - go test -coverprofile=coverage.out ./...
       - go tool cover -html=coverage.out
+
+  build-all:
+    desc: Cross-compile binaries for all platforms into dist/
+    vars:
+      LDFLAGS: "-X 'github.com/exasol-labs/saas-cli/internal/cmd.Version={{.VERSION}}'"
+    cmds:
+      - mkdir -p dist
+      - GOOS=darwin  GOARCH=amd64  go build -ldflags "{{.LDFLAGS}}" -o dist/exasol-saas-darwin-amd64     ./cmd/exasol-saas
+      - GOOS=darwin  GOARCH=arm64  go build -ldflags "{{.LDFLAGS}}" -o dist/exasol-saas-darwin-arm64     ./cmd/exasol-saas
+      - GOOS=linux   GOARCH=amd64  go build -ldflags "{{.LDFLAGS}}" -o dist/exasol-saas-linux-amd64      ./cmd/exasol-saas
+      - GOOS=linux   GOARCH=arm64  go build -ldflags "{{.LDFLAGS}}" -o dist/exasol-saas-linux-arm64      ./cmd/exasol-saas
+      - GOOS=windows GOARCH=amd64  go build -ldflags "{{.LDFLAGS}}" -o dist/exasol-saas-windows-amd64.exe ./cmd/exasol-saas
+
+  release:
+    desc: Create a GitHub release for v{{.VERSION}} and upload binaries
+    cmds:
+      - task: lint
+      - task: test
+      - task: build-all
+      - gh release create v{{.VERSION}} dist/* --title "v{{.VERSION}}" --generate-notes
