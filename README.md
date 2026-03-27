@@ -20,7 +20,7 @@ exasol-saas --help
 
 The sample script [`examples/setup-sample-db.sh`](examples/setup-sample-db.sh) walks through the full flow below end-to-end.
 
-### 📦 Recommended Additional Tools
+### 📦 Recommended Tools
 
 - **exapump** — to run queries against the database:
   ```bash
